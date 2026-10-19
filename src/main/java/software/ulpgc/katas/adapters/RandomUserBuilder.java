@@ -36,12 +36,12 @@ public class RandomUserBuilder implements UserBuilder {
     }
 
 
-    private List<User> deserialize(String json) throws URISyntaxException {
+    private List<User> deserialize(String json) throws URISyntaxException, IOException, InterruptedException {
         JsonArray results = new Gson().fromJson(json, JsonObject.class).get("results").getAsJsonArray();
         return deserialize(results);
     }
 
-    private List<User> deserialize(JsonArray results) throws URISyntaxException {
+    private List<User> deserialize(JsonArray results) throws URISyntaxException, IOException, InterruptedException {
         List<User> list = new ArrayList<>();
         for (JsonElement result : results) {
             list.add(deserialize(result));
@@ -50,11 +50,11 @@ public class RandomUserBuilder implements UserBuilder {
         return list;
     }
 
-    private User deserialize(JsonElement element) throws URISyntaxException {
-        return deserialize(new Gson().fromJson(element, software.ulpgc.katas.adapters.dtos.User.class))
+    private User deserialize(JsonElement element) throws URISyntaxException, IOException, InterruptedException {
+        return deserialize(new Gson().fromJson(element, software.ulpgc.katas.adapters.dtos.User.class));
     }
 
-    private User deserialize(software.ulpgc.katas.adapters.dtos.User user) throws URISyntaxException {
+    private User deserialize(software.ulpgc.katas.adapters.dtos.User user) throws URISyntaxException, IOException, InterruptedException {
         return new User (
                 user.name.first + " "+ user.name.last,
                 User.Gender.valueOf(user.gender),
@@ -62,19 +62,19 @@ public class RandomUserBuilder implements UserBuilder {
         );
     }
 
-    private byte[] pictureOf(software.ulpgc.katas.adapters.dtos.User.Picture picture) throws URISyntaxException {
+    private byte[] pictureOf(software.ulpgc.katas.adapters.dtos.User.Picture picture) throws URISyntaxException, IOException, InterruptedException {
         return readPicture(picture.large);
     }
 
-    private byte[] readPicture(String large) throws URISyntaxException {
-        return toBytes(client.send(requestForPicture(large), HttpResponse.BodyHandlers.ofString().ofInputStream()).body());
+    private byte[] readPicture(String large) throws URISyntaxException, IOException, InterruptedException {
+        return toBytes(client.send(requestForPicture(large), HttpResponse.BodyHandlers.ofInputStream()).body());
     }
 
     private byte[] toBytes(InputStream inputStream) throws IOException {
         return inputStream.readAllBytes();
     }
 
-    private Object requestForPicture(String uri) throws URISyntaxException {
+    private HttpRequest requestForPicture(String uri) throws URISyntaxException {
         return HttpRequest.newBuilder().GET().uri(new URI(uri)).build();
     }
 
@@ -86,7 +86,7 @@ public class RandomUserBuilder implements UserBuilder {
         return HttpRequest.newBuilder().GET().uri(uri).build();
     }
 
-    private Object uriFor(int count) throws URISyntaxException {
+    private URI uriFor(int count) throws URISyntaxException {
         return new URI(base + "?results" + count);
     }
 }
